@@ -59,22 +59,16 @@ print(logbook)
 pop=pop[0]
 
 # Filtrado de población
-one = []
-for position in range(len(pop)):
-    if pop[position] == 1 : 
-        one.append(position) # Lista de las posiciones de la población final con valor en 1
-        
 result = {}
 result['type'] = data['type']
 result['crs'] = data['crs']
 result['features'] = []
 
-cont=0
-for feature in data['features']:
-    if (cont in one):
-        result['features'].append(feature)
-    cont = cont+1
-        
+for index, elem in enumerate(pop):
+    if(elem == 1):
+        feature = data['features'][index]
+        result['features'].append(feature)        
+
 result['crs']['properties']['name'] = "urn:ogc:def:crs:EPSG::4326"
 
 # Escribir el archivo de salida
@@ -82,4 +76,3 @@ path_output_file = 'calificaciones_filtrado.JSON'
 
 with open(path_output_file, "w") as output_file:
     json.dump((result), output_file, indent = 3)
-
