@@ -1,48 +1,61 @@
 # -*- coding: utf-8 -*-
 import random
+import numpy 
 import json
-#import geopandas as gpd
 from deap import creator, base, tools, algorithms
 
 # Creación de tipos
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
+creator.create("FitnessMax", base.Fitness, weights = (1.0,))
+creator.create("Individual", list, fitness = creator.FitnessMax)
 
-#Tamaño del cromosoma
-ind_size = 1
+#Tamaño de la población
+pop_size = 1
 
-# Obtener el tamaño de la población
-path_input_file = 'calificaciones_filtrado.JSON'
-with open(path_input_file,"r") as input_file:
+# Obtener el tamaño del cromosoma
+with open('calificaciones_filtrado.JSON', "r") as input_file:
     data = json.load(input_file)
-pop_size = len(data['features'])
 
-#cali = gpd.read_file('calificaciones_filtrado.JSON') 
-#pop_size = len(cali) 
+ind_size = len(data['features'])
 
-# Función de Fitness
-def evalFitness(individual):    
-    return sum(individual),
+# Función de fitness
+def evalFitness(individual):
+    suma = 0
+    for index, elem in enumerate(individual):
+        if(elem == 1):
+            properties = data['features'][index]['properties']
+            poblacion = properties['poblacion']
+            trafico = properties['trafico']
+            tiempo = properties['tiempo_medio']
+            tweets = properties['tweets']
+            suma = suma + poblacion + trafico + tiempo + tweets
+    return suma,
 
 # Inicialización
 toolbox = base.Toolbox()
 toolbox.register("bit", random.randint, 0, 1)
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.bit, pop_size)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual, ind_size)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.bit, ind_size)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual, pop_size)
 
 # Operadores
 toolbox.register("evaluate", evalFitness)
-toolbox.register("mate", tools.cxTwoPoint, indpb=0.5) #http://deap.readthedocs.io/en/master/api/tools.html#operators
+toolbox.register("mate", tools.cxTwoPoint, indpb = 0.5)
 toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
 toolbox.register("select", tools.selBest)
 
-# Algoritmo Genético 
+# Algoritmo genético
 pop = toolbox.population()
-cxpb, mutpb, ngen = 0.5, 0.1, 50
-res = algorithms.eaSimple(pop, toolbox, cxpb, mutpb, ngen, verbose = False) #http://deap.readthedocs.io/en/1.0.x/api/algo.html#complete-algorithms
+stats = tools.Statistics(lambda ind: ind.fitness.values)
+stats.register("min", numpy.min)
+stats.register("avg", numpy.mean)
+stats.register("max", numpy.max)
+pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb = 0.5, mutpb = 0.1, ngen = 50, stats = stats, verbose = False)
 
 print('---POBLACIÓN FINAL---')
 print(pop)
+
+print('---LOGBOOK---')
+print(logbook)
+
 pop=pop[0]
 
 # Filtrado de población
