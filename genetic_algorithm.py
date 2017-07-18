@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
-import geopandas as gpd
+import json
+#import geopandas as gpd
 from deap import creator, base, tools, algorithms
 
 # Creación de tipos
@@ -11,11 +12,16 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 ind_size = 1
 
 # Obtener el tamaño de la población
-cali = gpd.read_file('calificaciones_filtrado.JSON') 
-pop_size = len(cali) 
+path_input_file = 'calificaciones_filtrado.JSON'
+with open(path_input_file,"r") as input_file:
+    data = json.load(input_file)
+pop_size = len(data['features'])
+
+#cali = gpd.read_file('calificaciones_filtrado.JSON') 
+#pop_size = len(cali) 
 
 # Función de Fitness
-def evalFitness(individual):
+def evalFitness(individual):    
     return sum(individual),
 
 # Inicialización
