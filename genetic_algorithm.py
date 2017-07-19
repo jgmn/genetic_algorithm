@@ -71,13 +71,13 @@ def plot_graph(logbook):
     fig, ax1 = plt.subplots()
     line1 = ax1.plot(gen, fit_max, "b-", label = "Maximum Fitness")
     ax1.set_xlabel("Generation")
-    ax1.set_ylabel("Fitness", color="b")
+    ax1.set_ylabel("Max Fitness", color="b")
     for tl in ax1.get_yticklabels():
         tl.set_color("b")
     
     ax2 = ax1.twinx()
     line2 = ax2.plot(gen, size_avgs, "r-", label = "Average Fitness")
-    ax2.set_ylabel("Size", color="r")
+    ax2.set_ylabel("Avg Fitness", color="r")
     for tl in ax2.get_yticklabels():
         tl.set_color("r")
     
