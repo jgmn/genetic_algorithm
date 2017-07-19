@@ -2,9 +2,10 @@
 import random
 import numpy 
 import json
+import matplotlib.pyplot as plt
 from deap import creator, base, tools, algorithms
 
-def algoritmo_genetico(ind_size, pop_size, cali):
+def execute_genetic_algorithm(ind_size, pop_size, cali):
     # Creación de tipos
     creator.create("FitnessMax", base.Fitness, weights = (1.0,))
     creator.create("Individual", list, fitness = creator.FitnessMax)
@@ -41,10 +42,10 @@ def algoritmo_genetico(ind_size, pop_size, cali):
     stats.register("avg", numpy.mean)
     stats.register("max", numpy.max)
     pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb = 0.5, mutpb = 0.1, ngen = 50, stats = stats, verbose = False)
-    
+
     return pop, logbook
 
-def puntos_de_recarga(pop, cali):
+def write_charging_stations(pop, cali):
     # Filtrado de población
     result = {}
     result['type'] = cali['type']
@@ -62,6 +63,30 @@ def puntos_de_recarga(pop, cali):
     with open('estaciones_de_recarga.JSON', "w") as output_file:
         json.dump((result), output_file, indent = 3)
         
+def plot_graph(logbook):
+    gen = logbook.select("gen")
+    fit_max = logbook.select("max")
+    size_avgs = logbook.select("avg")
+        
+    fig, ax1 = plt.subplots()
+    line1 = ax1.plot(gen, fit_max, "b-", label = "Maximum Fitness")
+    ax1.set_xlabel("Generation")
+    ax1.set_ylabel("Fitness", color="b")
+    for tl in ax1.get_yticklabels():
+        tl.set_color("b")
+    
+    ax2 = ax1.twinx()
+    line2 = ax2.plot(gen, size_avgs, "r-", label = "Average Fitness")
+    ax2.set_ylabel("Size", color="r")
+    for tl in ax2.get_yticklabels():
+        tl.set_color("r")
+    
+    lns = line1 + line2
+    labs = [l.get_label() for l in lns]
+    ax1.legend(lns, labs, loc = None)
+    
+    plt.show()
+        
 def main():
     with open('calificaciones_filtrado.JSON', "r") as input_file:
         cali = json.load(input_file)
@@ -70,11 +95,14 @@ def main():
     ind_size = len(cali['features'])
     pop_size = 1
     
-    pop, logbook = algoritmo_genetico(ind_size, pop_size, cali)
-    puntos_de_recarga(pop, cali)
+    pop, logbook = execute_genetic_algorithm(ind_size, pop_size, cali)
+    write_charging_stations(pop, cali)
     
     print('POBLACIÓN FINAL')
     print(pop)
+    
+    print('\nGRÁFICA DEL COMPORTAMIENTO EVOLUTIVO')
+    plot_graph(logbook)
     
     print('LOGBOOK')
     print(logbook)
