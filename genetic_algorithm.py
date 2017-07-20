@@ -32,9 +32,9 @@ def execute_genetic_algorithm(ind_size, pop_size, cali):
     
     # Operadores
     toolbox.register("evaluate", evalFitness)
-    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mate", tools.cxOnePoint)
     toolbox.register("mutate", tools.mutFlipBit, indpb = 0.05)
-    toolbox.register("select", tools.selBest)
+    toolbox.register("select", tools.selTournament, tournsize = 3)
     
     # Algoritmo genético
     pop = toolbox.population()
@@ -42,18 +42,18 @@ def execute_genetic_algorithm(ind_size, pop_size, cali):
     stats.register("min", numpy.min)
     stats.register("avg", numpy.mean)
     stats.register("max", numpy.max)
-    pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb = 0.5, mutpb = 0.1, ngen = 100, stats = stats, verbose = False)
+    pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb = 0.5, mutpb = 0.2, ngen = 100, stats = stats, verbose = False)
 
     return pop, logbook
 
-def save_charging_stations(pop, cali, date):
+def save_charging_stations(best, cali, date):
     # Filtrado de población
     result = {}
     result['type'] = cali['type']
     result['crs'] = cali['crs']
     result['features'] = []
     
-    for index, elem in enumerate(pop[0]):
+    for index, elem in enumerate(best[0]):
         if(elem == 1):
             feature = cali['features'][index]
             result['features'].append(feature)        
@@ -94,30 +94,32 @@ def save_graph(logbook, date):
     ax1.legend(lns, labs, loc = None)
     
     fig.savefig("grafica_fitness_"+date+".PNG")
-    #plot.show()
         
 def main():
-    with open('calificaciones_filtrado.JSON', "r") as input_file:
-        cali = json.load(input_file)
-    
-    # Tamaño del cromosoma y población
-    ind_size = len(cali['features'])
-    pop_size = 1
-    
-    pop, logbook = execute_genetic_algorithm(ind_size, pop_size, cali)
-    
     date = str(datetime.now())
     date = date.replace("-", "")
     date = date.replace(":", "")
     date = date.replace(".", "")
     date = date.replace(" ", "")
     
-    save_charging_stations(pop, cali, date)
+    with open('calificaciones_filtrado.JSON', "r") as input_file:
+        cali = json.load(input_file)
+    
+    # Tamaño del cromosoma y población
+    ind_size = len(cali['features'])
+    pop_size = 10
+    
+    pop, logbook = execute_genetic_algorithm(ind_size, pop_size, cali)    
+    best = tools.selBest(pop, k = 1)
+    save_charging_stations(best, cali, date)
     save_logbook(logbook, date)
     save_graph(logbook, date)
         
     print('POBLACIÓN FINAL')
     print(pop)
+    
+    print('\nMEJOR INDIVIDUO')
+    print(best)
     
     print('\nLOGBOOK')
     print(logbook)
