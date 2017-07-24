@@ -2,27 +2,38 @@
 import random
 import numpy 
 import json
+import geopandas as gpd
 import matplotlib.pyplot as plt
 from datetime import datetime
 from deap import creator, base, tools, algorithms
 
-def execute_genetic_algorithm(ind_size, pop_size, cali):
+def execute_genetic_algorithm(ind_size, pop_size, cali_df, voro_df):
     # Creación de tipos
     creator.create("FitnessMax", base.Fitness, weights = (1.0,))
     creator.create("Individual", list, fitness = creator.FitnessMax)
     
+    # Precálculo de totales 
+    pob_total = sum(cali_df['poblacion'])
+    trafico_total = sum(cali_df['trafico'])
+    tweets_total = sum(cali_df['tweets'])
+    area_total = sum(voro_df['geometry'].area)
+    
     # Función de fitness
     def evalFitness(individual):
-        suma = 0
+        poblacion, trafico, tweets, tiempo, area = 0, 0, 0, 0, 0
+        utilidad, coste, coste_unitario = 0, 0, 1 
+        num_estaciones = sum(individual)
         for index, elem in enumerate(individual):
             if(elem == 1):
-                properties = cali['features'][index]['properties']
-                poblacion = properties['poblacion']
-                trafico = properties['trafico']
-                tiempo = properties['tiempo_medio']
-                tweets = properties['tweets']
-                suma = suma + poblacion + trafico + tiempo + tweets
-        return suma,
+                poblacion += cali_df['poblacion'][index] / pob_total
+                trafico += cali_df['trafico'][index] / trafico_total
+                tweets += cali_df['tweets'][index]  / tweets_total
+                tiempo += cali_df['tiempo_medio'][index]
+                area += voro_df['geometry'][index].area / area_total  
+                coste += area + coste_unitario * num_estaciones
+                utilidad += poblacion + trafico + tiempo + tweets
+                utilidad = utilidad - coste                
+        return utilidad,
     
     # Inicialización
     toolbox = base.Toolbox()
@@ -55,6 +66,7 @@ def save_charging_stations(best, cali, date):
     
     for index, elem in enumerate(best[0]):
         if(elem == 1):
+            
             feature = cali['features'][index]
             result['features'].append(feature)        
     
@@ -102,14 +114,17 @@ def main():
     date = date.replace(".", "")
     date = date.replace(" ", "")
     
-    with open('calificaciones_filtrado.JSON', "r") as input_file:
+    with open('calificaciones_filtrado.JSON', 'r') as input_file:
         cali = json.load(input_file)
     
-    # Tamaño del cromosoma y población
-    ind_size = len(cali['features'])
-    pop_size = 10
+    cali_df = gpd.read_file('calificaciones_filtrado.JSON')
+    voro_df = gpd.read_file('voronoi.JSON')
     
-    pop, logbook = execute_genetic_algorithm(ind_size, pop_size, cali)    
+    # Tamaño del cromosoma y población
+    ind_size = len(cali_df['geometry'])
+    pop_size = 80
+    
+    pop, logbook = execute_genetic_algorithm(ind_size, pop_size, cali_df, voro_df)    
     best = tools.selBest(pop, k = 1)
     save_charging_stations(best, cali, date)
     save_logbook(logbook, date)
