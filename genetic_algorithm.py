@@ -16,6 +16,7 @@ def execute_genetic_algorithm(ind_size, pop_size, cali_df, voro_df):
     pob_total = sum(cali_df['poblacion'])
     trafico_total = sum(cali_df['trafico'])
     tweets_total = sum(cali_df['tweets'])
+    tiempo_total = sum(cali_df['tiempo_medio'])
     area_total = sum(voro_df['geometry'].area)
     
     # Función de fitness
@@ -28,7 +29,7 @@ def execute_genetic_algorithm(ind_size, pop_size, cali_df, voro_df):
                 poblacion += cali_df['poblacion'][index] / pob_total
                 trafico += cali_df['trafico'][index] / trafico_total
                 tweets += cali_df['tweets'][index]  / tweets_total
-                tiempo += cali_df['tiempo_medio'][index]
+                tiempo += cali_df['tiempo_medio'][index] / tiempo_total
                 area += voro_df['geometry'][index].area / area_total  
                 coste += area + coste_unitario * num_estaciones
                 utilidad += poblacion + trafico + tiempo + tweets
