@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+@author: J. Gerardo Moreno N.
+"""
 import random
 import numpy 
 import json
@@ -116,7 +119,7 @@ def main():
     
     # Tamaño del cromosoma y población
     ind_size = max(pdi_df.index) + 1
-    pop_size = 300
+    pop_size = 1000
     
     pop, logbook, best = execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df)    
     save_charging_stations(best, pdi, date)
