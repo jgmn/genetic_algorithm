@@ -8,6 +8,7 @@ import json
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from datetime import datetime
+from time import time 
 from deap import creator, base, tools, algorithms
 
 def execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df):
@@ -136,4 +137,9 @@ def main():
     print(logbook)
     
 if __name__ == "__main__":
+    # Calcular tiempo de ejecución
+    tiempo_inicial = time()
     main()
+    tiempo_final = time()
+    tiempo_ejecucion = tiempo_final - tiempo_inicial
+    print('Tiempo de ejecución: ', '%.2f'% (tiempo_ejecucion/60), 'minutos')
