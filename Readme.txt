@@ -7,7 +7,7 @@ Date: 17/07/2017.
 NOTES
 Before to execute genetic_algorithm.py you should have the following
 2 json files on your folder:
-- puntos_de_interes_json
+- puntos_de_interes.json
 - voronoi.json
 These files were generates by data_processing.py program.
 Also, you need to install DEAP library dependency in your Python environment.
