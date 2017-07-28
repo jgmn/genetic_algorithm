@@ -16,7 +16,7 @@ def execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df):
     creator.create("FitnessMax", base.Fitness, weights = (1.0,))
     creator.create("Individual", list, fitness = creator.FitnessMax)
     
-    # Cambiar el formato de coordendas para el cálculo de áreas
+    # Cambiar el formato de coordenadas para el cálculo de áreas
     voro_df = voro_df.to_crs({'init': 'epsg:25830'}) # http://spatialreference.org/ref/epsg/25830/proj4js/
     
     # Precálculo de totales 
@@ -65,27 +65,19 @@ def execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df):
 
     return pop, logbook, hof
 
-def save_charging_stations(best, pdi, date):
-    result = {}
-    result['type'] = pdi['type']
-    result['crs'] = pdi['crs']
-    result['features'] = []
-    
+def save_charging_stations(best, pdi_df, date):
     for index, elem in enumerate(best[0]):
-        if(elem == 1):
-            feature = pdi['features'][index]
-            result['features'].append(feature)        
+        if(elem == 0):
+            pdi_df.drop(index, axis = 0, inplace = True)
     
-    result['crs']['properties']['name'] = "urn:ogc:def:crs:EPSG::4326"
+    pdi_df = pdi_df.to_crs({'init': 'epsg:4326'})
+    pdi_df.to_file('estaciones_de_recarga_'+date+'.json', driver = "GeoJSON")
     
-    with open("estaciones_de_recarga_"+date+".json", "w") as output_file:
-        json.dump((result), output_file, indent = 3)
-        
 def save_logbook(logbook, date):   
     logbook_json = {}
     logbook_json['log'] = logbook
     
-    with open("logbook_"+date+".JSON", "w") as output_file:
+    with open("logbook_"+date+".json", "w") as output_file:
         json.dump(logbook_json, output_file, indent = 3)
         
 def save_graph(logbook, date): 
@@ -112,18 +104,15 @@ def main():
     date = date.replace(".", "")
     date = date.replace(" ", "")
     
-    with open('puntos_de_interes.json', 'r') as input_file:
-        pdi = json.load(input_file)
-    
     pdi_df = gpd.read_file('puntos_de_interes.json')
     voro_df = gpd.read_file('voronoi.json')
     
     # Tamaño del cromosoma y población
     ind_size = max(pdi_df.index) + 1
-    pop_size = 1000
+    pop_size = 20
     
     pop, logbook, best = execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df)    
-    save_charging_stations(best, pdi, date)
+    save_charging_stations(best, pdi_df, date)
     save_logbook(logbook, date)
     save_graph(logbook, date)
         
