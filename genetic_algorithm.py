@@ -7,6 +7,7 @@ import numpy
 import json
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from folium import Map, GeoJson, LayerControl
 from datetime import datetime
 from time import time 
 from deap import creator, base, tools, algorithms
@@ -95,8 +96,16 @@ def save_graph(logbook, date):
     labs = [l.get_label() for l in lns]
     ax1.legend(lns, labs)
     
-    fig.savefig("grafica_fitness_"+date+".PNG")
-        
+    fig.savefig("grafica_fitness_"+date+".png")
+    
+def save_map(date):
+    valencia = [39.4561165311493, -0.3545661635]
+    mapa = Map(location = valencia, tiles = 'OpenStreetMap', zoom_start = 10)
+    GeoJson(open('voronoi.json'), name = 'Diagrama de Voronoi').add_to(mapa)
+    GeoJson(open('estaciones_de_recarga_'+date+'.json'), name = 'Estaciones de Recarga').add_to(mapa)
+    LayerControl().add_to(mapa)
+    mapa.save('valencia_'+date+'.html')
+    
 def main():
     date = str(datetime.now())
     date = date.replace("-", "")
@@ -109,12 +118,13 @@ def main():
     
     # Tamaño del cromosoma y población
     ind_size = max(pdi_df.index) + 1
-    pop_size = 20
+    pop_size = 100
     
     pop, logbook, best = execute_genetic_algorithm(ind_size, pop_size, pdi_df, voro_df)    
     save_charging_stations(best, pdi_df, date)
     save_logbook(logbook, date)
     save_graph(logbook, date)
+    save_map(date)
         
     print('POBLACIÓN FINAL')
     print(pop)
@@ -131,4 +141,4 @@ if __name__ == "__main__":
     main()
     tiempo_final = time()
     tiempo_ejecucion = tiempo_final - tiempo_inicial
-    print('Tiempo de ejecución: ', '%.2f'% (tiempo_ejecucion/60), 'minutos')
+    print('\nTiempo de ejecución: ', '%.2f'% (tiempo_ejecucion/60), 'minutos')
