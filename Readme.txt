@@ -9,11 +9,19 @@ Before to execute genetic_algorithm.py you should have the following
 2 json files on your folder:
 - puntos_de_interes.json
 - voronoi.json
-These files were generate by data_processing.py program.
-Also, you need to install DEAP library dependency in your Python environment.
+
+These files were generate by data_processing.py program. 
+
+Also, you need to install some dependencies to run it successfully: 
+- numpy
+- geopandas
+- matplotlib
+- folium
+- deap
 
 The genetic algorithm optimizes the points of interest calculating the fitness
 for each population's individual based on population, traffic, tweets and time data.
+
 The genetic algorithm generates 4 files:
 - grafica_fitness_XXX.png: Show the fitness max evolution throught generations. 
 - logbook_XXX.json: Contains the statistics of evolution.
