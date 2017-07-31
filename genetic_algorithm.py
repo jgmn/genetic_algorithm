@@ -55,7 +55,7 @@ def execute_genetic_algorithm(ind_size, pop_size, cxpb, mutpb, ngen, pdi_df, vor
 
         utilidad += poblacion + trafico + tiempo + tweets 
         coste = area + coste_unitario * num_estaciones
-        utilidad = utilidad - coste              
+        utilidad = utilidad - coste
 
         return utilidad,
     
@@ -142,7 +142,7 @@ def save_graph(logbook, date):
 
 #--------------------------------SAVE_MAP-------------------------------------#
 # DESCRIPCIÓN: Guarda el mapa web para visualizar el diagrama de Voronoi y    #
-#              y las estaciones de recarga.                                   #
+#              las estaciones de recarga.                                     #
 # PARÁMETROS:                                                                 #
 #   ENTRADA: logbook: Estadísticas del algoritmo genético.                    #
 #            date: Fecha.                                                     #    
